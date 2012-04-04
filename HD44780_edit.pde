@@ -51,6 +51,10 @@ int last_edit_pos[] = {-1, -1};
 // Export to C code requested? 
 // Using the flag because calling file dialogs in event thread throws an exception (now selectOutput() runs in draw())
 boolean do_export = false;
+
+boolean do_open = false;
+boolean do_save = false;
+
 // State of Reset All button. To reset, press twice. This flag monitor at which click we are.
 boolean sure_about_reset = false;
 
@@ -96,6 +100,12 @@ void setup() {
 void draw() {
   // Clear all.
   background(#202020);
+  
+ /* --- Common dialogs operations --- */ 
+  
+  if(do_export) export();
+  if(do_open)   openFile();
+  if(do_save)   saveFile();
   
   /* --- LCD Preview area --- */
   
@@ -169,12 +179,12 @@ void draw() {
   noStroke();
   
   // Draw actual buttons.
-  drawButton(width - 10 - 75, 145, 75, 20, "Open", true);
-  drawButton(width - 10 - 75, 170, 75, 20, "Save", true);
+  drawButton(width - 10 - 75, 145, 75, 20, "Open", #6680B7);
+  drawButton(width - 10 - 75, 170, 75, 20, "Save", #6680B7);
   drawButton(width - 10 - 75, 195, 75, 20, "Export");
   
   // Here caption is different if we have alredy clicked once the button.
-  drawButton(width - 10 - 75, 260, 75, 20, sure_about_reset ? "Are you sure?" : "Reset all");
+  drawButton(width - 10 - 75, 260, 75, 20, sure_about_reset ? "Are you sure?" : "Reset all", #FF6262);
   
   /* --- Footer --- */
   pushStyle();
@@ -186,10 +196,6 @@ void draw() {
   
   // Restore text align
   popStyle();
-  
-  /* --- Common dialogs operations --- */ 
-  
-  if(do_export) export();
 }
 
 // Draw a char at given position, with given scale. (scale = 1 : 5x7 pixel, scale = 2 : 10x14, and so on)
@@ -213,11 +219,11 @@ void drawChar(int xPos, int yPos, int charScale, boolean[][] charData) {
 }
 
 // Draw a button at given pos, with given size and text.
-void drawButton(int x, int y, int w, int h, String caption) { drawButton(x, y, w, h, caption, false); }
-void drawButton(int x, int y, int w, int h, String caption, boolean disabled) {
+void drawButton(int x, int y, int w, int h, String caption) { drawButton(x, y, w, h, caption, -1); }
+void drawButton(int x, int y, int w, int h, String caption, color backColor) {
   pushStyle();
   
-  fill(disabled ? #999999 : #477EF2);
+  fill(backColor != -1 ? backColor : #477EF2);
   textAlign(CENTER, CENTER);
   
   // Background rect.
@@ -248,10 +254,16 @@ void mousePressed() {
   checkLcdClick();
   
   // Check for clicks in buttons
-  if(checkButtonClick(195)) {
+  if(checkButtonClick(195))
     // Export button clicked.
     do_export = true;
-  } else if(checkButtonClick(260)) {
+  else if(checkButtonClick(170))
+    // Save button clicked.
+    do_save = true;
+  else if(checkButtonClick(145))
+    // Open button clicked.
+    do_open = true;
+  else if(checkButtonClick(260)) {
     // Reset All button clicked.
     
     // flag is true if we had already clicked the button once.
@@ -434,6 +446,67 @@ void export() {
   
   // Reset the flag.
   do_export = false;
+}
+
+
+void saveFile() {
+  // Opens file chooser
+  String savePath = selectOutput();
+  byte row;
+  
+  if (savePath != null) {
+    byte[] data = new byte[8 * 8 + 4 * 10];
+    
+    // Save characters' data    
+    for(int i = 0; i < 8; i++)
+      for(int y = 0; y < 8; y++) {
+        row = 0;
+        
+        for(int x = 0; x < 5; x++) 
+          if(custom_char[i + 1][x][y]) row = (byte)(row | (1 << (4-x)));
+          
+        data[8 * i + y] = row;
+      }
+    
+    // Save preview data
+    for(int y = 0; y < 4; y++)
+        for(int hx = 0; hx < 10; hx++) // hx for half-x, because 10 is half of 20 :)
+          data[64 + 10 * y + hx] = (byte)( (lcd_matrix[2 * hx][y] << 4) + lcd_matrix[2 * hx + 1][y] );
+    
+    saveBytes(savePath, data);
+  }
+  
+  // Reset the flag.
+  do_save = false;
+}
+
+void openFile() {
+  String openPath = selectInput();
+  
+  if(openPath != null) {
+    // Reset all
+    initArrays();
+    
+    byte data[] = loadBytes(openPath);
+    
+    if(data.length != 8 * 8 + 4 * 10) return;
+    
+    // Load characters' data
+    for(int i = 0; i < 8; i++) 
+      for(int y = 0; y < 8; y++) 
+        for(int x = 0; x < 5; x++)
+          custom_char[i + 1][x][y] = ( data[8 * i + y] & (1 << (4-x)) ) != 0;
+          
+    // Load preview data
+    for(int y = 0; y < 4; y++)
+        for(int hx = 0; hx < 10; hx++) {
+          lcd_matrix[2 * hx][y]     = (data[64 + 10 * y + hx] & 0xF0) >> 4 ;
+          lcd_matrix[2 * hx + 1][y] =  data[64 + 10 * y + hx] & 0x0F;
+        }
+  }
+  
+  // Reset the flag.
+  do_open = false;
 }
 
 /*********************************************************
