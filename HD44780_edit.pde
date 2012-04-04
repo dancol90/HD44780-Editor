@@ -16,7 +16,8 @@
  *  You should have received a copy of the GNU General Public License     *
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  **************************************************************************/
- 
+
+static final String program_version = "v1.1";
 
 /*********************************************************
     POSITIONS and DIMENSIONS
@@ -70,7 +71,7 @@ void initArrays() {
 
 // Entrypoint of the sketch
 void setup() {
-  frame.setTitle("HD44780 Custom Character Editor");
+  frame.setTitle("HD44780 Custom Character Editor " + program_version);
   
   size(lcd_size[0] + 20, 325);
   
@@ -192,7 +193,7 @@ void draw() {
   fill(#aaaaaa, 50);
   textAlign(RIGHT, BOTTOM);
   
-  text("v1.0 ©Daniele Colanardi 2012", width - 5, height - 5);
+  text(program_version + " ©Daniele Colanardi 2012", width - 5, height - 5);
   
   // Restore text align
   popStyle();
