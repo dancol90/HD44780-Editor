@@ -23,7 +23,7 @@ static final String program_version = "v1.1";
     POSITIONS and DIMENSIONS
  *********************************************************/ 
 
-static final int lcd_pos[] = {10, 20}; // Left & top position of lcd preview
+static final int lcd_pos[] = {25, 20}; // Left & top position of lcd preview
 static final int lcd_scale  = 3;       // Scale of lcd preview characters (3 times 5x7 pixel)
 static final int[] lcd_char_dim = {5 * lcd_scale + 1, 8 * lcd_scale + 1};  // CALCULATED. Width & height of a single lcd char 
 static final int[] lcd_size = {20 * lcd_char_dim[0], 4 * lcd_char_dim[1]}; // CALCULATED. Width & height of lcd preview.
@@ -33,9 +33,209 @@ static final int custom_chars_scale  = 5;        // Scale of custom chars thumbn
 static final int[] custom_char_dim   = {5 * custom_chars_scale + 1, 8 * custom_chars_scale + 1}; // CALCULATED. Width & height of a single thumbnail
 static final int[] custom_chars_size = {4 * custom_char_dim[0], 2 * custom_char_dim[1]};         // CALCULATED. Width & height of all thumbnail
 
-static final int edit_char_pos[] = {135, 140}; // Position of editing area
+static final int char_table_pos[] = {10, 330}; // Position
+static final int char_table_scale  = 2;        // Scale
+static final int[] char_table_char_dim   = {5 * char_table_scale + 1, 8 * char_table_scale + 1}; // CALCULATED. Width & height of a single
+static final int[] char_table_size = {32 * char_table_char_dim[0], 6 * char_table_char_dim[1]};  // CALCULATED. Width & height of all
+
+static final int edit_char_pos[] = {150, 140}; // Position of editing area
 static final int edit_char_scale = 20;         // Scale of editing area
-  
+
+int[][] chrtbl = {
+    {  0,  0,  0,  0,  0,  0,  0 }, // 0 - 32 
+    // The first 32 character are empty, do not repeat
+    {  4,  4,  4,  4,  4,  0,  4 }, // 33
+    { 10, 10, 10,  0,  0,  0,  0 }, // 34
+    { 10, 10, 31, 10, 31, 10, 10 }, // 35
+    {  4, 15, 20, 14,  5, 30,  4 }, // 36
+    { 24, 25,  2,  4,  8, 19,  3 }, // 37
+    { 12, 18, 20,  8, 21, 18, 13 }, // 38
+    { 12,  4,  8,  0,  0,  0,  0 }, // 39
+    {  2,  4,  8,  8,  8,  4,  2 }, // 40
+    {  8,  4,  2,  2,  2,  4,  8 }, // 41
+    {  0,  4, 21, 14, 21,  4,  0 }, // 42
+    {  0,  4,  4, 31,  4,  4,  0 }, // 43
+    {  0,  0,  0,  0, 12,  4,  8 }, // 44
+    {  0,  0,  0, 31,  0,  0,  0 }, // 45
+    {  0,  0,  0,  0,  0, 12, 12 }, // 46
+    {  0,  1,  2,  4,  8, 16,  0 }, // 47
+    { 14, 17, 19, 21, 25, 17, 14 }, // 48
+    {  4, 12,  4,  4,  4,  4, 14 }, // 49
+    { 14, 17,  1,  2,  4,  8, 31 }, // 50
+    { 31,  2,  4,  2,  1, 17, 14 }, // 51
+    {  2,  6, 10, 18, 31,  2,  2 }, // 52
+    { 31, 16, 30,  1,  1, 17, 14 }, // 53
+    {  6,  8, 16, 30, 17, 17, 14 }, // 54
+    { 31,  1,  2,  4,  8,  8,  8 }, // 55
+    { 14, 17, 17, 14, 17, 17, 14 }, // 56
+    { 14, 17, 17, 15,  1,  2, 12 }, // 57
+    {  0, 12, 12,  0, 12, 12,  0 }, // 58
+    {  0, 12, 12,  0, 12,  4,  8 }, // 59
+    {  2,  4,  8, 16,  8,  4,  2 }, // 60
+    {  0,  0, 31,  0, 31,  0,  0 }, // 61
+    { 16,  8,  4,  2,  4,  8, 16 }, // 62
+    { 14, 17,  1,  2,  4,  0,  4 }, // 63
+    { 14, 17,  1, 13, 21, 21, 14 }, // 64
+    { 14, 17, 17, 17, 31, 17, 17 }, // 65
+    { 30, 17, 17, 30, 17, 17, 30 }, // 66
+    { 14, 17, 16, 16, 16, 17, 14 }, // 67
+    { 30, 17, 17, 17, 17, 17, 30 }, // 68
+    { 31, 16, 16, 30, 16, 16, 31 }, // 69
+    { 31, 16, 16, 30, 16, 16, 16 }, // 70
+    { 14, 17, 16, 23, 17, 17, 15 }, // 71
+    { 17, 17, 17, 31, 17, 17, 17 }, // 72
+    { 14,  4,  4,  4,  4,  4, 14 }, // 73
+    {  7,  2,  2,  2,  2, 18, 12 }, // 74
+    { 17, 18, 20, 24, 20, 18, 17 }, // 75
+    { 16, 16, 16, 16, 16, 16, 31 }, // 76
+    { 17, 27, 21, 21, 17, 17, 17 }, // 77
+    { 17, 17, 25, 21, 19, 17, 17 }, // 78
+    { 14, 17, 17, 17, 17, 17, 14 }, // 79
+    { 30, 17, 17, 30, 16, 16, 16 }, // 80
+    { 14, 17, 17, 17, 21, 18, 13 }, // 81
+    { 30, 17, 17, 30, 20, 18, 17 }, // 82
+    { 15, 16, 16, 14,  1,  1, 30 }, // 83
+    { 31,  4,  4,  4,  4,  4,  4 }, // 84
+    { 17, 17, 17, 17, 17, 17, 14 }, // 85
+    { 17, 17, 17, 17, 17, 10,  4 }, // 86
+    { 17, 17, 17, 21, 21, 21, 10 }, // 87
+    { 17, 17, 10,  4, 10, 17, 17 }, // 88
+    { 17, 17, 17, 10,  4,  4,  4 }, // 89
+    { 31,  1,  2,  4,  8, 16, 31 }, // 90
+    { 14,  8,  8,  8,  8,  8, 14 }, // 91
+    { 17, 10, 31,  4, 31,  4,  4 }, // 92
+    { 14,  2,  2,  2,  2,  2, 14 }, // 93
+    {  4, 10, 17,  0,  0,  0,  0 }, // 94
+    {  0,  0,  0,  0,  0,  0, 31 }, // 95
+    {  8,  4,  2,  0,  0,  0,  0 }, // 96
+    {  0,  0, 14,  1, 15, 17, 15 }, // 97
+    { 16, 16, 22, 25, 17, 17, 30 }, // 98
+    {  0,  0, 14, 16, 16, 17, 14 }, // 99
+    {  1,  1, 13, 19, 17, 17, 15 }, // 100
+    {  0,  0, 14, 17, 31, 16, 14 }, // 101
+    {  6,  9,  8, 28,  8,  8,  8 }, // 102
+    {  0,  0, 15, 17, 15,  1, 14 }, // 103
+    { 16, 16, 22, 25, 17, 17, 17 }, // 104
+    {  4,  0, 12,  4,  4,  4, 14 }, // 105
+    {  2,  6,  2,  2,  2, 18, 12 }, // 106
+    { 16, 16, 18, 20, 24, 20, 18 }, // 107
+    { 12,  4,  4,  4,  4,  4, 14 }, // 108
+    {  0,  0, 26, 21, 21, 17, 17 }, // 109
+    {  0,  0, 22, 25, 17, 17, 17 }, // 110
+    {  0,  0, 14, 17, 17, 17, 14 }, // 111
+    {  0,  0, 30, 17, 30, 16, 16 }, // 112
+    {  0,  0, 13, 19, 15,  1,  1 }, // 113
+    {  0,  0, 22, 25, 16, 16, 16 }, // 114
+    {  0,  0, 15, 16, 14,  1, 30 }, // 115
+    {  8,  8, 28,  8,  8,  9,  6 }, // 116
+    {  0,  0, 17, 17, 17, 19, 13 }, // 117
+    {  0,  0, 17, 17, 17, 10,  4 }, // 118
+    {  0,  0, 17, 17, 21, 21, 10 }, // 119
+    {  0,  0, 17, 10,  4, 10, 17 }, // 120
+    {  0,  0, 17, 17, 15,  1, 14 }, // 121
+    {  0,  0, 31,  2,  4,  8, 31 }, // 122
+    {  2,  4,  4,  8,  4,  4,  2 }, // 123
+    {  4,  4,  4,  4,  4,  4,  4 }, // 124
+    {  8,  4,  4,  2,  4,  4,  8 }, // 125
+    {  0,  4,  2, 31,  2,  4,  0 }, // 126
+    {  0,  4,  8, 31,  8,  4,  0 }, // 127
+    {  0,  0,  0,  0,  0,  0,  0 }, // 128 - 160
+    {  0,  0,  0,  0, 28, 20, 28 }, // 161
+    {  7,  4,  4,  4,  0,  0,  0 }, // 162
+    {  0,  0,  0,  4,  4,  4, 28 }, // 163
+    {  0,  0,  0,  0, 16,  8,  4 }, // 164
+    {  0,  0,  0, 12, 12,  0,  0 }, // 165
+    {  0, 31,  1, 31,  1,  2,  4 }, // 166
+    {  0,  0, 31,  1,  6,  4,  8 }, // 167
+    {  0,  0,  2,  4, 12, 20,  4 }, // 168
+    {  0,  0,  4, 31, 17,  1,  6 }, // 169
+    {  0,  0,  0, 31,  4,  4, 31 }, // 170
+    {  0,  0,  2, 31,  6, 10, 18 }, // 171
+    {  0,  0,  8, 31,  9, 10,  8 }, // 172
+    {  0,  0,  0, 14,  2,  2, 31 }, // 173
+    {  0,  0, 30,  2, 30,  2, 30 }, // 174
+    {  0,  0,  0, 21, 21,  1,  6 }, // 175
+    {  0,  0,  0,  0, 31,  0,  0 }, // 176
+    { 31,  1,  5,  6,  4,  4,  8 }, // 177
+    {  1,  2,  4, 12, 20,  4,  4 }, // 178
+    {  4, 31, 17, 17,  1,  2,  4 }, // 179
+    {  0,  0, 31,  4,  4,  4, 31 }, // 180
+    {  2, 31,  2,  6, 10, 18,  2 }, // 181
+    {  8, 31,  9,  9,  9,  9, 18 }, // 182
+    {  4, 31,  4, 31,  4,  4,  4 }, // 183
+    {  0, 15,  9, 17,  1,  2, 12 }, // 184
+    {  8, 15, 18,  2,  2,  2,  4 }, // 185
+    {  0, 31,  1,  1,  1,  1, 31 }, // 186
+    { 10, 31, 10, 10,  2,  4,  8 }, // 187
+    {  0, 24,  1, 25,  1,  2, 28 }, // 188
+    {  0, 31,  1,  2,  4, 10, 17 }, // 189
+    {  8, 31,  9, 10,  8,  8,  7 }, // 190
+    {  0, 17, 17,  9,  1,  2, 12 }, // 191
+    {  0, 15,  9, 21,  3,  2, 12 }, // 192
+    {  2, 28,  4, 31,  4,  4,  8 }, // 193
+    {  0, 21, 21,  1,  1,  2,  4 }, // 194
+    { 14,  0, 31,  4,  4,  4,  8 }, // 195
+    {  8,  8,  8, 12, 10,  8,  8 }, // 196
+    {  4,  4, 31,  4,  4,  8, 16 }, // 197
+    {  0, 14,  0,  0,  0,  0, 31 }, // 198
+    {  0, 31,  1, 10,  4, 10, 16 }, // 199
+    {  4, 31,  2,  4, 14, 21,  4 }, // 200
+    {  2,  2,  2,  2,  2,  4,  8 }, // 201
+    {  0,  4,  2, 17, 17, 17, 17 }, // 202
+    { 16, 16, 31, 16, 16, 16, 15 }, // 203
+    {  0, 31,  1,  1,  1,  2, 12 }, // 204
+    {  0,  8, 20,  2,  1,  1,  0 }, // 205
+    {  4, 31,  4,  4, 21, 21,  4 }, // 206
+    {  0, 31,  1,  1, 10,  4,  2 }, // 207
+    {  0, 14,  0, 14,  0, 14,  1 }, // 208
+    {  0,  4,  8, 16, 17, 31,  1 }, // 209
+    {  0,  1,  1, 10,  4, 10, 16 }, // 210
+    {  0, 31,  8, 31,  8,  8,  7 }, // 211
+    {  8,  8, 31,  9, 10,  8,  8 }, // 212
+    {  0, 14,  2,  2,  2,  2, 31 }, // 213
+    {  0, 31,  1, 31,  1,  1, 31 }, // 214
+    { 14,  0, 31,  1,  1,  2,  4 }, // 215
+    { 18, 18, 18, 18,  2,  4,  8 }, // 216
+    {  0,  4, 20, 20, 21, 21, 22 }, // 217
+    {  0, 16, 16, 17, 18, 20, 24 }, // 218
+    {  0, 31, 17, 17, 17, 17, 31 }, // 219
+    {  0, 31, 17, 17,  1,  2,  4 }, // 220
+    {  0, 24,  0,  1,  1,  2, 28 }, // 221
+    {  4, 18,  8,  0,  0,  0,  0 }, // 222
+    { 28, 20, 28,  0,  0,  0,  0 }, // 223
+    {  0,  0,  9, 21, 18, 18, 13 }, // 224
+    { 10,  0, 14,  1, 15, 17, 15 }, // 225
+    {  0, 14, 17, 30, 17, 30, 16 }, // 226
+    {  0,  0, 14, 16, 12, 17, 14 }, // 227
+    {  0, 17, 17, 17, 19, 29, 16 }, // 228
+    {  0,  0, 15, 20, 18, 17, 14 }, // 229
+    {  0,  6,  9, 17, 17, 30, 16 }, // 230
+    {  0, 15, 17, 17, 17, 15,  1 }, // 231
+    {  0,  0,  7,  4,  4, 20,  8 }, // 232
+    {  2, 26,  2,  0,  0,  0,  0 }, // 233
+    {  2,  0,  6,  2,  2,  2,  2 }, // 234
+    {  0, 20,  8, 20,  0,  0,  0 }, // 235
+    {  4, 14, 20, 21, 14,  4,  0 }, // 236
+    {  8,  8, 28,  8, 28,  8, 15 }, // 237
+    { 14,  0, 22, 25, 17, 17, 17 }, // 238
+    { 10,  0, 14, 17, 17, 17, 14 }, // 239
+    {  0, 22, 25, 17, 17, 30, 16 }, // 240
+    {  0, 13, 19, 17, 17, 15,  1 }, // 241
+    { 14, 17, 31, 17, 17, 14,  0 }, // 242
+    {  0,  0,  0,  0, 11, 21, 26 }, // 243
+    {  0, 14, 17, 17, 10, 27,  0 }, // 244
+    { 10,  0, 17, 17, 17, 19, 13 }, // 245
+    { 31, 16,  8,  4,  8, 16, 31 }, // 246
+    {  0, 31, 10, 10, 10, 19,  0 }, // 247
+    { 31,  0, 17, 10,  4, 10, 17 }, // 248
+    {  0, 17, 17, 17, 17, 15,  1 }, // 249
+    {  1, 30,  4, 31,  4,  4,  0 }, // 250
+    {  0, 31,  8, 15,  9, 17,  0 }, // 251
+    {  0, 31, 21, 31, 17, 17,  0 }, // 252
+    {  0,  0,  4,  0, 31,  0,  4 }, // 253
+    {  0,  0,  0,  0,  0,  0,  0 }, // 254
+    { 31, 31, 31, 31, 31, 31, 31 }  // 255
+};
 
 // 20x4 Matrix for lcd preview
 int     lcd_matrix[][];
@@ -73,7 +273,7 @@ void initArrays() {
 void setup() {
   frame.setTitle("HD44780 Custom Character Editor " + program_version);
   
-  size(lcd_size[0] + 20, 325);
+  size(lcd_size[0] + 50, 325 + 130);
   
   // Let's call draw() only when needed.
   noLoop();
@@ -111,7 +311,7 @@ void draw() {
   /* --- LCD Preview area --- */
   
   fill(#ffffff);
-  text("LCD Preview", 10, 15);
+  text("LCD Preview", lcd_pos[0], lcd_pos[1] - 5);
   
   // For each row...
   for(int r = 0; r < 4; r++) {
@@ -127,7 +327,7 @@ void draw() {
   /* --- Custom chars area --- */
   
   fill(#ffffff);
-  text("Custom charaters", 10, 135);
+  text("Custom charaters", custom_chars_pos[0], custom_chars_pos[1] - 5);
   
   int i, x, y;
   
@@ -155,23 +355,30 @@ void draw() {
   /* --- Char edit area --- */
 
   fill(#ffffff);
-  text("Edit character", 135, 135);
+  text("Edit character", edit_char_pos[0], edit_char_pos[1] - 5);
     
   drawChar(edit_char_pos[0], edit_char_pos[1], edit_char_scale, custom_char[current_custom_char]);
+  
+  /* --- Standard character table --- */
+  fill(#ffffff);
+  text("HD44780 standard characters", char_table_pos[0], char_table_pos[1] - 5);
+  
+  for(i = 0; i < chrtbl.length; i++) {
+    drawChar(char_table_pos[0] + (i % 32) * char_table_char_dim[0], char_table_pos[1] + (i / 32) * char_table_char_dim[1], char_table_scale, getCharFromTable(i));
+  }
   
   /* --- Quick help --- */
   
   fill(#ffffff);
-  text("Drag chars above \nin LCD preview \nto place them.\nRight click to delete.", 10, 235);
+  text("Drag chars above \nin LCD preview \nto place them.\nRight click to delete.", 10, 245);
   
   /* --- Drag shadow --- */
   
   // If dragging a char...
   if(current_dragging_char != -1 && !mouseInRect(custom_chars_pos, custom_chars_size))
     // ...draw it under the mouse pointer. 
-    drawChar(mouseX - lcd_char_dim[0] / 2, mouseY - lcd_char_dim[1] / 2, lcd_scale, custom_char[current_custom_char]);
-    
-    
+    drawChar(mouseX - lcd_char_dim[0] / 2, mouseY - lcd_char_dim[1] / 2, lcd_scale, custom_char[current_custom_char]);  
+  
   /* --- Buttons area --- */
   
   // Draw a border around buttons area.
@@ -199,6 +406,29 @@ void draw() {
   popStyle();
 }
 
+
+/*int getCharTableIndex(char c) {
+  int i = (int)c;
+  
+  if(i >= 0 && i <= 32) return 0;
+  
+  if(i >= 33 && i <= 127) return i - 32;
+  
+  if(i >= 128 && i <= 160) return 96;
+  
+  return i - 64;  
+}*/
+
+
+boolean[][] getCharFromTable(int i) {
+  boolean tmpChar[][] = new boolean[5][8];
+  
+  for(int y = 0; y < 7; y++) 
+      for(int x = 0; x < 5; x++)
+        tmpChar[x][y] = ( chrtbl[i][y] & (1 << (4-x)) ) != 0;
+  
+  return tmpChar;
+}
 // Draw a char at given position, with given scale. (scale = 1 : 5x7 pixel, scale = 2 : 10x14, and so on)
 void drawChar(int xPos, int yPos, int charScale, boolean[][] charData) {
   pushStyle();
@@ -215,7 +445,7 @@ void drawChar(int xPos, int yPos, int charScale, boolean[][] charData) {
       rect(xPos + x * charScale, yPos + y * charScale, charScale - 1, charScale - 1);
     }
   }
-
+  
   popStyle();
 }
 
@@ -287,12 +517,13 @@ void mousePressed() {
 
 // Mouse dragged event handler
 void mouseDragged() {
-  // Check if mouse is in edit area, and draw.
-  checkPointEdit();
-  
   // Redraw needed only if we are dragging a char to preview, to draw its shadow.
   if(current_dragging_char != -1)
     redraw();
+  else // We are not dragging anything.
+    // Check if mouse is in edit area, and draw.
+    checkPointEdit();
+  
 }
 
 // Mouse button released event handler.
