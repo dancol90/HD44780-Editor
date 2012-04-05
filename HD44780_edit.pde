@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  **************************************************************************/
 
-static final String program_version = "v1.1";
+static final String program_version = "v1.1.5";
 
 /*********************************************************
     POSITIONS and DIMENSIONS
