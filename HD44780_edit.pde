@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  **************************************************************************/
 
-static final String program_version = "v1.1.7";
+static final String program_version = "v1.2";
 
 /*********************************************************
     POSITIONS and DIMENSIONS
@@ -762,7 +762,7 @@ void openFile() {
     int  preview_pages;
     
     switch(data.length) {
-      // Retro-compatibility: file saved before v1.1.7 has only one preview screen.
+      // Retro-compatibility: file saved before v1.2 has only one preview screen.
       case 8 * 8 + 4 * 10:
         preview_pages = 1;
         break;
