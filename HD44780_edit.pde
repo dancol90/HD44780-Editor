@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  **************************************************************************/
 
-static final String program_version = "v1.1.5";
+static final String program_version = "v1.1.7";
 
 /*********************************************************
     POSITIONS and DIMENSIONS
@@ -259,6 +259,7 @@ boolean do_save = false;
 
 // State of Reset All button. To reset, press twice. This flag monitor at which click we are.
 boolean sure_about_reset = false;
+boolean sure_about_clear_preview = false;
 
 /*********************************************************
     SETUP
@@ -398,6 +399,7 @@ void draw() {
   drawButton(width - 10 - 75, 195, 75, 20, "Export");
   
   // Here caption is different if we have alredy clicked once the button.
+  drawButton(width - 10 - 75, 235, 75, 20, sure_about_clear_preview ? "Are you sure?" : "Clear preview", #FF6262);
   drawButton(width - 10 - 75, 260, 75, 20, sure_about_reset ? "Are you sure?" : "Reset all", #FF6262);
   
   /* --- Footer --- */
@@ -508,7 +510,21 @@ void mousePressed() {
   else if(checkButtonClick(145))
     // Open button clicked.
     do_open = true;
-  else if(checkButtonClick(260)) {
+  else if(checkButtonClick(235)) {
+    // Clear prview button clicked.
+    
+    // flag is true if we had already clicked the button once.
+    if(sure_about_clear_preview) {
+      // So the user is sure. Farewall, current preview!
+      lcd_matrix[current_lcd_preview] = new int[20][4];
+      
+      // Reset flag. We are ready to restart.
+      sure_about_clear_preview = false;
+    } else
+      // This was the first click, wait for another one.
+      sure_about_clear_preview = true;
+    
+  } else if(checkButtonClick(260)) {
     // Reset All button clicked.
     
     // flag is true if we had already clicked the button once.
@@ -522,9 +538,11 @@ void mousePressed() {
       // This was the first click, wait for another one.
       sure_about_reset = true;
     
-  } else
+  } else {
     // Clicked elsewhere, restart. 
     sure_about_reset = false;
+    sure_about_clear_preview = false;
+  }
   
   redraw();
 }
