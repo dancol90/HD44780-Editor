@@ -41,7 +41,7 @@ static final int[] char_table_size = {32 * char_table_char_dim[0], 6 * char_tabl
 static final int edit_char_pos[] = {150, 140}; // Position of editing area
 static final int edit_char_scale = 20;         // Scale of editing area
 
-int[][] chrtbl = {
+/*int[][] chrtbl = {
     {  0,  0,  0,  0,  0,  0,  0 }, // 0 - 32 
     // The first 32 character are empty, do not repeat
     {  4,  4,  4,  4,  4,  0,  4 }, // 33
@@ -235,7 +235,7 @@ int[][] chrtbl = {
     {  0,  0,  4,  0, 31,  0,  4 }, // 253
     {  0,  0,  0,  0,  0,  0,  0 }, // 254
     { 31, 31, 31, 31, 31, 31, 31 }  // 255
-};
+};*/
 
 // 20x4 Matrix for lcd preview
 int     lcd_matrix[][][];
@@ -275,7 +275,7 @@ void initArrays() {
 void setup() {
   frame.setTitle("HD44780 Custom Character Editor " + program_version);
   
-  size(lcd_size[0] + 50, 325 + 130);
+  size(lcd_size[0] + 50, 325 /*+ 130*/);
   
   // Let's call draw() only when needed.
   noLoop();
@@ -348,10 +348,14 @@ void draw() {
       
       // Draw a border around the char if it's the currently selected.
       if(i == current_custom_char) {
+        pushStyle();
+        
         stroke(#ffffff, 150);
         noFill();
         
         rect(x - 1, y - 1, custom_char_dim[0] - 1, custom_char_dim[1] - 1);
+        
+        popStyle();
       }
       
       // Draw the char thumbnails itself.
@@ -361,22 +365,22 @@ void draw() {
 
   /* --- Char edit area --- */
 
-  fill(#ffffff);
   text("Edit character", edit_char_pos[0], edit_char_pos[1] - 5);
     
   drawChar(edit_char_pos[0], edit_char_pos[1], edit_char_scale, custom_char[current_custom_char]);
   
   /* --- Standard character table --- */
-  fill(#ffffff);
+  
+  /*
   text("HD44780 standard characters", char_table_pos[0], char_table_pos[1] - 5);
   
   for(i = 0; i < chrtbl.length; i++) {
     drawChar(char_table_pos[0] + (i % 32) * char_table_char_dim[0], char_table_pos[1] + (i / 32) * char_table_char_dim[1], char_table_scale, getCharFromTable(i));
   }
+  */
   
   /* --- Quick help --- */
   
-  fill(#ffffff);
   text("Drag chars above \nin LCD preview \nto place them.\nRight click to delete.", 10, 245);
   
   /* --- Drag shadow --- */
@@ -425,8 +429,7 @@ void draw() {
   if(i >= 128 && i <= 160) return 96;
   
   return i - 64;  
-}*/
-
+}
 
 boolean[][] getCharFromTable(int i) {
   boolean tmpChar[][] = new boolean[5][8];
@@ -437,6 +440,8 @@ boolean[][] getCharFromTable(int i) {
   
   return tmpChar;
 }
+*/
+
 // Draw a char at given position, with given scale. (scale = 1 : 5x7 pixel, scale = 2 : 10x14, and so on)
 void drawChar(int xPos, int yPos, int charScale, boolean[][] charData) {
   pushStyle();
@@ -720,7 +725,7 @@ void saveFile() {
   byte row;
   
   if (savePath != null) {
-    byte[] data = new byte[8 * 8 + 4 * 10];
+    byte[] data = new byte[8 * 8 + 5 * 4 * 10];
     
     // Save characters' data    
     for(int i = 0; i < 8; i++)
@@ -734,9 +739,10 @@ void saveFile() {
       }
     
     // Save preview data
-    for(int y = 0; y < 4; y++)
-        for(int hx = 0; hx < 10; hx++) // hx for half-x, because 10 is half of 20 :)
-          data[64 + 10 * y + hx] = (byte)( (lcd_matrix[current_lcd_preview][2 * hx][y] << 4) + lcd_matrix[current_lcd_preview][2 * hx + 1][y] );
+    for(int i = 0; i < 5; i++)
+      for(int y = 0; y < 4; y++)
+          for(int hx = 0; hx < 10; hx++) // hx for half-x, because 10 is half of 20 :)
+            data[64 + i * 40 + 10 * y + hx] = (byte)( (lcd_matrix[i][2 * hx][y] << 4) + lcd_matrix[i][2 * hx + 1][y] );
     
     saveBytes(savePath, data);
   }
@@ -753,8 +759,20 @@ void openFile() {
     initArrays();
     
     byte data[] = loadBytes(openPath);
+    int  preview_pages;
     
-    if(data.length != 8 * 8 + 4 * 10) return;
+    switch(data.length) {
+      // Retro-compatibility: file saved before v1.1.7 has only one preview screen.
+      case 8 * 8 + 4 * 10:
+        preview_pages = 1;
+        break;
+      // Current version: 5 pages, so bigger file size.
+      case 8 * 8 + 5 * 4 * 10:
+        preview_pages = 5;
+        break;
+      default:
+        return;
+    }
     
     // Load characters' data
     for(int i = 0; i < 8; i++) 
@@ -763,11 +781,17 @@ void openFile() {
           custom_char[i + 1][x][y] = ( data[8 * i + y] & (1 << (4-x)) ) != 0;
           
     // Load preview data
-    for(int y = 0; y < 4; y++)
-        for(int hx = 0; hx < 10; hx++) {
-          lcd_matrix[current_lcd_preview][2 * hx][y]     = (data[64 + 10 * y + hx] & 0xF0) >> 4 ;
-          lcd_matrix[current_lcd_preview][2 * hx + 1][y] =  data[64 + 10 * y + hx] & 0x0F;
-        }
+    int b;
+    
+    for(int i = 0; i < preview_pages; i++)
+      for(int y = 0; y < 4; y++)
+          for(int hx = 0; hx < 10; hx++) {
+            //  char data len + page offest + line offset + column  
+            b = 64            + 40 * i      + 10 * y      + hx;
+            
+            lcd_matrix[i][2 * hx][y]     = (data[b] & 0xF0) >> 4 ;
+            lcd_matrix[i][2 * hx + 1][y] =  data[b] & 0x0F;
+          }
   }
   
   // Reset the flag.
