@@ -23,7 +23,7 @@ static final String program_version = "v1.1.5";
     POSITIONS and DIMENSIONS
  *********************************************************/ 
 
-static final int lcd_pos[] = {25, 20}; // Left & top position of lcd preview
+static final int lcd_pos[] = {15, 20}; // Left & top position of lcd preview
 static final int lcd_scale  = 3;       // Scale of lcd preview characters (3 times 5x7 pixel)
 static final int[] lcd_char_dim = {5 * lcd_scale + 1, 8 * lcd_scale + 1};  // CALCULATED. Width & height of a single lcd char 
 static final int[] lcd_size = {20 * lcd_char_dim[0], 4 * lcd_char_dim[1]}; // CALCULATED. Width & height of lcd preview.
@@ -238,10 +238,11 @@ int[][] chrtbl = {
 };
 
 // 20x4 Matrix for lcd preview
-int     lcd_matrix[][];
+int     lcd_matrix[][][];
 // 8x custom char. Each one has 5x7 pixels.
 boolean custom_char[][][];
 
+int current_lcd_preview = 0;
 // Selected char to be edited.
 int current_custom_char = 1;
 // Currently mouse dragged char. -1 means no dragging activity.
@@ -266,7 +267,7 @@ boolean sure_about_reset = false;
 // Init preview and custom chars arrays 
 void initArrays() {
   custom_char = new boolean[9][5][8];
-  lcd_matrix  = new int[20][4];
+  lcd_matrix  = new int[5][20][4];
 }
 
 // Entrypoint of the sketch
@@ -320,13 +321,18 @@ void draw() {
       // ...draw the char.
       drawChar(lcd_pos[0] + c * lcd_char_dim[0], lcd_pos[1] + r * lcd_char_dim[1], 
                lcd_scale,
-               custom_char[lcd_matrix[c][r]]);
+               custom_char[lcd_matrix[current_lcd_preview][c][r]]);
     }
   }
   
+  drawButton(width - 10 - 20, 40, 20, 20, ">");
+  drawButton(width - 10 - 20, 80, 20, 20, "<");
+  
+  text(current_lcd_preview + 1 + "/5", width - 10 - 20, 75);
+  
   /* --- Custom chars area --- */
   
-  fill(#ffffff);
+  //fill(#ffffff);
   text("Custom charaters", custom_chars_pos[0], custom_chars_pos[1] - 5);
   
   int i, x, y;
@@ -485,7 +491,15 @@ void mousePressed() {
   checkLcdClick();
   
   // Check for clicks in buttons
-  if(checkButtonClick(195))
+  if(checkButtonClick(40, 20)) {
+    current_lcd_preview++;
+    
+    if(current_lcd_preview == 5) current_lcd_preview = 0;
+  } else if(checkButtonClick(80, 20)){
+    current_lcd_preview--;
+    
+    if(current_lcd_preview == -1) current_lcd_preview = 4;
+  } else if(checkButtonClick(195))
     // Export button clicked.
     do_export = true;
   else if(checkButtonClick(170))
@@ -546,7 +560,7 @@ void mouseReleased() {
       y = floor(y / lcd_char_dim[1]);
       
       // Set it to the dragged char's index.
-      lcd_matrix[x][y] = current_dragging_char;
+      lcd_matrix[current_lcd_preview][x][y] = current_dragging_char;
     }
     
     // Reset dragging flag
@@ -600,7 +614,7 @@ void checkLcdClick() {
     y = floor(y / lcd_char_dim[1]);
 
     // ..and clear it.
-    lcd_matrix[x][y] = 0;
+    lcd_matrix[current_lcd_preview][x][y] = 0;
     
     //redraw();
   }
@@ -627,8 +641,9 @@ void checkCharsClick() {
 }
 
 // Check if mouse has been left-clicked in a button area.
-boolean checkButtonClick(int posY) {
-  return (mouseInRect(width - 10 - 75, posY, 75, 20) && mouseButton == LEFT);
+boolean checkButtonClick(int posY) { return checkButtonClick(posY, 75); }
+boolean checkButtonClick(int posY, int w) {
+  return (mouseInRect(width - 10 - w, posY, w, 20) && mouseButton == LEFT);
 }
 
 /*********************************************************
@@ -703,7 +718,7 @@ void saveFile() {
     // Save preview data
     for(int y = 0; y < 4; y++)
         for(int hx = 0; hx < 10; hx++) // hx for half-x, because 10 is half of 20 :)
-          data[64 + 10 * y + hx] = (byte)( (lcd_matrix[2 * hx][y] << 4) + lcd_matrix[2 * hx + 1][y] );
+          data[64 + 10 * y + hx] = (byte)( (lcd_matrix[current_lcd_preview][2 * hx][y] << 4) + lcd_matrix[current_lcd_preview][2 * hx + 1][y] );
     
     saveBytes(savePath, data);
   }
@@ -732,8 +747,8 @@ void openFile() {
     // Load preview data
     for(int y = 0; y < 4; y++)
         for(int hx = 0; hx < 10; hx++) {
-          lcd_matrix[2 * hx][y]     = (data[64 + 10 * y + hx] & 0xF0) >> 4 ;
-          lcd_matrix[2 * hx + 1][y] =  data[64 + 10 * y + hx] & 0x0F;
+          lcd_matrix[current_lcd_preview][2 * hx][y]     = (data[64 + 10 * y + hx] & 0xF0) >> 4 ;
+          lcd_matrix[current_lcd_preview][2 * hx + 1][y] =  data[64 + 10 * y + hx] & 0x0F;
         }
   }
   
