@@ -260,6 +260,7 @@ boolean do_save = false;
 // State of Reset All button. To reset, press twice. This flag monitor at which click we are.
 boolean sure_about_reset = false;
 boolean sure_about_clear_preview = false;
+boolean show_indexes = false;
 
 /*********************************************************
     SETUP
@@ -312,6 +313,8 @@ void draw() {
   
   /* --- LCD Preview area --- */
   
+  int i, x, y;
+  
   fill(#ffffff);
   text("LCD Preview", lcd_pos[0], lcd_pos[1] - 5);
   
@@ -320,11 +323,23 @@ void draw() {
     // ...and for each column...
     for(int c = 0; c < 20; c++) {
       // ...draw the char.
-      drawChar(lcd_pos[0] + c * lcd_char_dim[0], lcd_pos[1] + r * lcd_char_dim[1], 
-               lcd_scale,
+      
+      x = lcd_pos[0] + c * lcd_char_dim[0];
+      y = lcd_pos[1] + r * lcd_char_dim[1];
+      
+      i = lcd_matrix[current_lcd_preview][c][r];
+      
+      drawChar(x, y, lcd_scale,
                custom_char[lcd_matrix[current_lcd_preview][c][r]]);
+      
+      if(show_indexes)
+        drawButton(x, y, lcd_char_dim[0], lcd_char_dim[1], 
+                   i > 0 ? Integer.toString(i - 1) : "-", 
+                   #000000, 0x9fffffff);
     }
   }
+  
+  drawButton(width - 10 - 20, 15, 20, 20, "i");
   
   drawButton(width - 10 - 20, 40, 20, 20, ">");
   drawButton(width - 10 - 20, 80, 20, 20, "<");
@@ -335,8 +350,6 @@ void draw() {
   
   //fill(#ffffff);
   text("Custom charaters", custom_chars_pos[0], custom_chars_pos[1] - 5);
-  
-  int i, x, y;
   
   for(int r = 0; r < 2; r++) {
     for(int c = 0; c < 4; c++) {
@@ -463,8 +476,9 @@ void drawChar(int xPos, int yPos, int charScale, boolean[][] charData) {
 }
 
 // Draw a button at given pos, with given size and text.
-void drawButton(int x, int y, int w, int h, String caption) { drawButton(x, y, w, h, caption, -1); }
-void drawButton(int x, int y, int w, int h, String caption, color backColor) {
+void drawButton(int x, int y, int w, int h, String caption) { drawButton(x, y, w, h, caption, -1, -1); }
+void drawButton(int x, int y, int w, int h, String caption, color backColor) { drawButton(x, y, w, h, caption, -1, backColor); }
+void drawButton(int x, int y, int w, int h, String caption, color foreColor, color backColor) {
   pushStyle();
   
   fill(backColor != -1 ? backColor : #477EF2);
@@ -473,7 +487,7 @@ void drawButton(int x, int y, int w, int h, String caption, color backColor) {
   // Background rect.
   rect(x, y, w, h);
 
-  fill(#ffffff);
+  fill(foreColor != -1 ? foreColor : #ffffff);
   
   // Caption text in the middle
   text(caption, x + w / 2, y + h / 2);
@@ -506,7 +520,9 @@ void mousePressed() {
     current_lcd_preview--;
     
     if(current_lcd_preview == -1) current_lcd_preview = 4;
-  } else if(checkButtonClick(195))
+  } else if(checkButtonClick(15, 20))
+    show_indexes = !show_indexes;
+  else if(checkButtonClick(195))
     // Export button clicked.
     do_export = true;
   else if(checkButtonClick(170))
