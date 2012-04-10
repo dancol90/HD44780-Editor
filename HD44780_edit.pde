@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  **************************************************************************/
 
-static final String program_version = "v1.2";
+static final String program_version = "v1.2.5";
 
 /*********************************************************
     POSITIONS and DIMENSIONS
@@ -339,12 +339,12 @@ void draw() {
     }
   }
   
-  drawButton(width - 10 - 20, 15, 20, 20, "i");
+  drawButton(width - 10 - 20, 20, 20, 20, "i");
   
-  drawButton(width - 10 - 20, 40, 20, 20, ">");
-  drawButton(width - 10 - 20, 80, 20, 20, "<");
+  drawButton(width - 10 - 20, 55, 20, 20, ">");
+  drawButton(width - 10 - 20, 95, 20, 20, "<");
   
-  text(current_lcd_preview + 1 + "/5", width - 10 - 20, 75);
+  text(current_lcd_preview + 1 + "/5", width - 10 - 20, 90);
   
   /* --- Custom chars area --- */
   
@@ -512,15 +512,15 @@ void mousePressed() {
   checkLcdClick();
   
   // Check for clicks in buttons
-  if(checkButtonClick(40, 20)) {
+  if(checkButtonClick(55, 20)) {
     current_lcd_preview++;
     
     if(current_lcd_preview == 5) current_lcd_preview = 0;
-  } else if(checkButtonClick(80, 20)){
+  } else if(checkButtonClick(85, 20)){
     current_lcd_preview--;
     
     if(current_lcd_preview == -1) current_lcd_preview = 4;
-  } else if(checkButtonClick(15, 20))
+  } else if(checkButtonClick(20, 20))
     show_indexes = !show_indexes;
   else if(checkButtonClick(195))
     // Export button clicked.
