@@ -516,7 +516,7 @@ void mousePressed() {
     current_lcd_preview++;
     
     if(current_lcd_preview == 5) current_lcd_preview = 0;
-  } else if(checkButtonClick(85, 20)){
+  } else if(checkButtonClick(95, 20)){
     current_lcd_preview--;
     
     if(current_lcd_preview == -1) current_lcd_preview = 4;
